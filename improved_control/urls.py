@@ -12,4 +12,5 @@ urlpatterns = patterns('',
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^existence/', include('existence_hashing.urls')),
+    url(r'^control/', include('existence_checking.urls')),
 )
