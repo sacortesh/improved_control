@@ -1,0 +1,12 @@
+<h1>"Hello world!!!. You're at the starting page of the app of Generation of Index of Existence"</h1>
+
+
+<ul>
+	<li><a href="/existence/stats/">Database Statistics</a></li>
+	{% if set_countries %}
+		{% for country in set_countries %}
+			<li><a href="/existence/generate/{{country}}/"Index of Existence</a></li>
+		{% endfor %}
+	{% endif %}
+</ul>
+
