@@ -1,12 +1,32 @@
-<h1>"Hello world!!!. You're at the starting page of the app of Generation of Index of Existence"</h1>
+{% extends 'existence_hashing/base.html' %}
+
+{% block title %}
+	Generation of Existence Indexes
+{% endblock %}
 
 
-<ul>
-	<li><a href="/existence/stats/">Database Statistics</a></li>
-	{% if set_countries %}
-		{% for country in set_countries %}
-			<li><a href="/existence/generate/{{country}}/">{{country}}'s  Index of Existence</a></li>
-		{% endfor %}
-	{% endif %}
-</ul>
+{% block content %}
+	<p>Welcome to the landing page of generation of the index of existence. To generate a country's index, please select it from the list below and hit on generate. A message will be displayed upon success.</p>
+
+	<p><b>Note to developper:</b> There is a need to add authorization stages to this page for it is at the moment the most insecure page :/ </p>
+
+
+	<ul>
+		<li><a href="/existence/stats/">Database Statistics</a></li>
+		
+	</ul>
+
+<form role="form" action="/existence/generate/" method="post">
+	<div class="form-group">
+		<select class="form-control">
+	 		{% if set_countries %}
+				{% for country in set_countries %}
+					<option>{{country}}</option>
+				{% endfor %}
+			{% endif %}
+		</select>
+	</div>
+	<button type="submit" class="btn btn-default">Generate</button>
+</form>
+{% endblock %}
 

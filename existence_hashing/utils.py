@@ -126,3 +126,48 @@ def hashing_daemon(country):
         hashing_queue.task_done()
 
 
+def look_for_collisions(country):
+    with open(os.path.join(PROJECT_ROOT, 'generated_indexes/%s' % country)) as f:
+        seen = set()
+        for line in f:
+            line_lower = line.lower()
+            if line_lower in seen:
+                print(line)
+            else:
+                seen.add(line_lower)
+
+def create_all_files(strategy=0):
+    if strategy == 0:
+        set_countries_agreements = set()
+        file_countries = open(os.path.join(PROJECT_ROOT, 'list_countries'))
+        set_countries_temp = set(line.strip() for line in file_countries)
+        file_countries.close()
+        set_countries = sorted_nicely(set_countries_temp)
+
+        for each_country in set_countries:
+            set_agreements = frozenset(get_agreements(each_country))
+            set_countries_agreements.add(set_agreements)
+
+        print("All agreements obtained")
+
+        set_passports = Passport.objects.all()
+
+        print("All passports obtained")
+
+
+        for each_passport in set_passports:
+            for each_agreement in set_countries_agreements:
+                for each_country in each_agreement:
+                    if each_passport.nationality == each_country:
+                        with open(os.path.join(PROJECT_ROOT, 'generated_indexes/%s' % iter(each_agreement).next()), "a") as f:
+                            f.write(generate_hash(each_passport.nationality + "<" + each_passport.id_passport, each_country) + "\n")
+                    print(".")
+                print("_")
+            print("-")
+        print("~")
+
+
+
+
+
+
