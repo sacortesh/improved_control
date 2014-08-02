@@ -2,7 +2,7 @@ import os
 import time
 from improved_control.settings import PROJECT_ROOT
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext, loader
 from existence_hashing.utils import sorted_nicely, generate_index, get_agreements, get_all_passports_by_agreement
 from existence_hashing.models import Passport
@@ -22,7 +22,18 @@ def index(request):
 def stats(request):
     return HttpResponse("You're looking at the SLTD-FK-DB details. These are at the moment unimplemented")
 
-def generate(request, country):
+
+def generate(request):
+    if request.method == 'POST': # If the form has been submitted...
+        country = request.POST.get('dropdown', "XXX"); # A form bound to the POST data
+        return HttpResponseRedirect(country) # Redirect after POST
+
+
+
+    return HttpResponseRedirect('/') # Redirect after POST
+    
+
+def generate_for_country(request, country):
     #In the future this will get modified with a loop for looking into the possible permissions a country might have
     #import pdb; pdb.set_trace()
 

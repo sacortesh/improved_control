@@ -25,40 +25,49 @@ def generate_hash(msg, salt):
     print "h"
     return m2.hexdigest()
 
-def generate_index(set_passports, country):
-    start= time.clock()
-    #	import pdb; pdb.set_trace()
+def generate_index(set_passports, country, strategy = 1):
     flag = True
-    try:
 
-        file_country = open(os.path.join(PROJECT_ROOT, 'generated_indexes/%s' % country), "w")
+    if (strategy == 0):
+        #	import pdb; pdb.set_trace()
+        try:
 
-        for i in range(num_worker_threads-1):
-            t = Thread(target=hashing_daemon, args=(country,))
+            file_country = open(os.path.join(PROJECT_ROOT, 'generated_indexes/%s' % country), "w")
+
+            for i in range(num_worker_threads-1):
+                t = Thread(target=hashing_daemon, args=(country,))
+                t.daemon = True
+                t.start()
+
+    	
+            t = Thread(target=write_to_disk_daemon, args=(file_country,))
             t.daemon = True
             t.start()
 
-	
-        t = Thread(target=write_to_disk_daemon, args=(file_country,))
-        t.daemon = True
-        t.start()
-	        
+            #TODO generate a true salt per country
+            for passport in set_passports:
+                hashing_queue.put(passport.nationality + '<' + passport.id_passport)
 
-        #TODO generate a true salt per country
-        for passport in set_passports:
-            hashing_queue.put(passport.nationality + '<' + passport.id_passport)
-
-        #enclosure_queue.put("STOP")
-        hashing_queue.join()	
-        writing_queue.join()	
+            #enclosure_queue.put("STOP")
+            hashing_queue.join()	
+            writing_queue.join()	
+            file_country.close()
+            
+        except:
+            flag = False
+    else:
+        flag = True
+        try:
+            for passport in set_passports:
+                    
+                with open(os.path.join(PROJECT_ROOT, 'generated_indexes/%s' % country), "a") as file_country:
+                    file_country.write(generate_hash(passport.nationality + '<' + passport.id_passport, country) + "\n")
+        except:
+            flag = False
         
-	file_country.close()
-        end= time.clock()
-        total = end-start
-        print "generating time took: " + str(total) + "\n"
-    except:
-        flag = False
     return flag
+
+
 
 def get_agreements(country):
     """ Gets the list of countries that the country argument has an agreement with. """
@@ -127,14 +136,19 @@ def hashing_daemon(country):
 
 
 def look_for_collisions(country):
+    seen = set()
+    x=0
+
     with open(os.path.join(PROJECT_ROOT, 'generated_indexes/%s' % country)) as f:
-        seen = set()
         for line in f:
             line_lower = line.lower()
             if line_lower in seen:
                 print(line)
+                x+= 1
             else:
                 seen.add(line_lower)
+
+    return str(len(seen)) + " records found, " + str(x) + "repetitions"
 
 def create_all_files(strategy=0):
     if strategy == 0:
@@ -166,6 +180,27 @@ def create_all_files(strategy=0):
             print("-")
         print("~")
 
+    if strategy == 1:
+
+        file_countries = open(os.path.join(PROJECT_ROOT, 'list_countries'))
+        set_countries_temp = set(line.strip() for line in file_countries)
+        file_countries.close()
+        set_countries = sorted_nicely(set_countries_temp)
+
+        while len(set_countries)!= 0:
+            country = set_countries.pop()
+            list_countries = get_agreements(country)
+            list_passports = Passport.objects.filter(nationality=country)
+            for each_passport in list_passports:
+                for each_country in list_countries:
+                    with open(os.path.join(PROJECT_ROOT, 'generated_indexes/%s' % each_country), "a") as f:
+                        f.write(generate_hash(each_passport.nationality + "<" + each_passport.id_passport, each_country) + "\n")
+                        print("r")
+                print("c")
+            print("p")
+        print("P")
+
+                    
 
 
 
